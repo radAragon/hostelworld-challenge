@@ -7,6 +7,7 @@ import {
   Query,
   Put,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Record } from '../schemas/record.schema';
@@ -41,6 +42,7 @@ export class RecordController {
   @Put(':id')
   @ApiOperation({ summary: 'Update an existing record' })
   @ApiResponse({ status: 200, description: 'Record updated successfully' })
+  @ApiResponse({ status: 404, description: 'Record not found' })
   @ApiResponse({ status: 500, description: 'Cannot find record to update' })
   async update(
     @Param('id') id: string,
@@ -48,7 +50,7 @@ export class RecordController {
   ): Promise<Record> {
     const record = await this.recordModel.findById(id);
     if (!record) {
-      throw new InternalServerErrorException('Record not found');
+      throw new NotFoundException('Record not found');
     }
 
     Object.assign(record, updateRecordDto);
