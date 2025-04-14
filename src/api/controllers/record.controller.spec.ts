@@ -105,6 +105,8 @@ describe('RecordController', () => {
     ];
 
     jest.spyOn(recordModel, 'find').mockReturnValue({
+      limit: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
       exec: jest.fn().mockResolvedValue(records),
     } as any);
 
