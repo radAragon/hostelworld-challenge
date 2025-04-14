@@ -103,45 +103,48 @@ export class RecordController {
     enum: RecordCategory,
     type: String,
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number',
+    type: Number,
+    default: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of records per page',
+    type: Number,
+    default: 10,
+  })
   async findAll(
     @Query('q') q?: string,
     @Query('artist') artist?: string,
     @Query('album') album?: string,
     @Query('format') format?: RecordFormat,
     @Query('category') category?: RecordCategory,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
   ): Promise<Record[]> {
-    const allRecords = await this.recordModel.find().exec();
+    const query = this.recordModel
+      .find({
+        ...(q
+          ? {
+              $or: [
+                { artist: { $regex: q, $options: 'i' } },
+                { album: { $regex: q, $options: 'i' } },
+                { category: { $regex: q, $options: 'i' } },
+              ],
+            }
+          : {}),
+        ...(artist ? { artist: { $regex: artist, $options: 'i' } } : {}),
+        ...(album ? { album: { $regex: album, $options: 'i' } } : {}),
+        ...(format ? { format: { $regex: format, $options: 'i' } } : {}),
+        ...(category ? { category: { $regex: category, $options: 'i' } } : {}),
+      })
+      .limit(limit)
+      .skip((page - 1) * limit);
 
-    const filteredRecords = allRecords.filter((record) => {
-      let match = true;
-
-      if (q) {
-        match =
-          match &&
-          (record.artist.includes(q) ||
-            record.album.includes(q) ||
-            record.category.includes(q));
-      }
-
-      if (artist) {
-        match = match && record.artist.includes(artist);
-      }
-
-      if (album) {
-        match = match && record.album.includes(album);
-      }
-
-      if (format) {
-        match = match && record.format === format;
-      }
-
-      if (category) {
-        match = match && record.category === category;
-      }
-
-      return match;
-    });
-
-    return filteredRecords;
+    return query.exec();
   }
 }

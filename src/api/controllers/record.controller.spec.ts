@@ -21,7 +21,7 @@ describe('RecordController', () => {
             constructor: jest.fn().mockResolvedValue({}),
             find: jest.fn(),
             findById: jest.fn(),
-            save: jest.fn(),
+            updateOne: jest.fn(),
             create: jest.fn(),
           },
         },
@@ -60,6 +60,41 @@ describe('RecordController', () => {
       qty: 10,
       category: RecordCategory.ALTERNATIVE,
       format: RecordFormat.VINYL,
+    });
+  });
+
+  it('should update a record', async () => {
+    const savedRecord = {
+      _id: '2',
+      artist: 'Test Record',
+      price: 100,
+      qty: 10,
+    };
+
+    jest.spyOn(recordModel, 'findById').mockResolvedValue({
+      ...savedRecord, // this is a copy so the instance is not mutated
+    } as any);
+
+    const changes = {
+      artist: 'Test Update Record',
+    };
+    jest.spyOn(recordModel, 'updateOne').mockResolvedValue({
+      ...savedRecord,
+      ...changes,
+    } as any);
+
+    const result = await recordController.update(
+      savedRecord._id as string,
+      changes as any,
+    );
+
+    expect(result).toEqual({
+      ...savedRecord,
+      ...changes,
+    });
+    expect(recordModel.updateOne).toHaveBeenCalledWith({
+      ...savedRecord,
+      ...changes,
     });
   });
 
