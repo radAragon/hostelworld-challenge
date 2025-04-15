@@ -63,6 +63,7 @@ describe('RecordController (e2e)', () => {
     expect(response.body.length).toBe(1);
     expect(response.body[0]).toHaveProperty('artist', 'The Fake Band');
   });
+
   afterEach(async () => {
     if (recordId) {
       await recordModel.findByIdAndDelete(recordId);

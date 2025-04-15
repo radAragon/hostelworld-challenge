@@ -126,24 +126,24 @@ export class RecordController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ): Promise<Record[]> {
-    const query = this.recordModel
-      .find({
-        ...(q
-          ? {
-              $or: [
-                { artist: { $regex: q, $options: 'i' } },
-                { album: { $regex: q, $options: 'i' } },
-                { category: { $regex: q, $options: 'i' } },
-              ],
-            }
-          : {}),
+    let query = this.recordModel.find();
+
+    if (q) {
+      query = query.or([
+        { artist: { $regex: q, $options: 'i' } },
+        { album: { $regex: q, $options: 'i' } },
+        { category: { $regex: q, $options: 'i' } },
+      ]);
+    } else {
+      query = query.find({
         ...(artist ? { artist: { $regex: artist, $options: 'i' } } : {}),
         ...(album ? { album: { $regex: album, $options: 'i' } } : {}),
         ...(format ? { format: { $regex: format, $options: 'i' } } : {}),
         ...(category ? { category: { $regex: category, $options: 'i' } } : {}),
-      })
-      .limit(limit)
-      .skip((page - 1) * limit);
+      });
+    }
+
+    query = query.limit(limit).skip((page - 1) * limit);
 
     return query.exec();
   }

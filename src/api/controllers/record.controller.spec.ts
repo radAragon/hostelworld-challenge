@@ -32,6 +32,10 @@ describe('RecordController', () => {
     recordModel = module.get<Model<Record>>(getModelToken('Record'));
   });
 
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   it('should create a new record', async () => {
     const createRecordDto: CreateRecordRequestDTO = {
       artist: 'Test',
@@ -105,12 +109,33 @@ describe('RecordController', () => {
     ];
 
     jest.spyOn(recordModel, 'find').mockReturnValue({
+      find: jest.fn().mockReturnThis(),
+      or: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       exec: jest.fn().mockResolvedValue(records),
     } as any);
 
     const result = await recordController.findAll();
+    expect(result).toEqual(records);
+    expect(recordModel.find).toHaveBeenCalled();
+  });
+
+  it('should execute a query of records', async () => {
+    const records = [
+      { _id: '1', name: 'Record 1', price: 100, qty: 10 },
+      { _id: '2', name: 'Record 2', price: 200, qty: 20 },
+    ];
+
+    jest.spyOn(recordModel, 'find').mockReturnValue({
+      find: jest.fn().mockReturnThis(),
+      or: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue(records),
+    } as any);
+
+    const result = await recordController.findAll('Artist');
     expect(result).toEqual(records);
     expect(recordModel.find).toHaveBeenCalled();
   });
