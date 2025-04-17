@@ -7,6 +7,7 @@ import { CreateRecordRequestDTO } from '../dtos/create-record.request.dto';
 import { RecordCategory, RecordFormat } from '../schemas/record.enum';
 import { RecordService } from '../services/record.service';
 import { MbrainzService } from '../../mbrainz/mbrainz.service';
+import { NotFoundException } from '@nestjs/common';
 
 describe('RecordController', () => {
   let controller: RecordController;
@@ -230,5 +231,13 @@ describe('RecordController', () => {
     const result = await controller.findAll('Artist');
     expect(result).toEqual(records);
     expect(recordModel.find).toHaveBeenCalled();
+  });
+
+  it('should throw NotFoundException when record is not found to update', async () => {
+    jest.spyOn(recordModel, 'findById').mockResolvedValue(null);
+
+    await expect(controller.update('1', {} as any)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 });

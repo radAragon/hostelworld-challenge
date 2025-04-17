@@ -51,18 +51,14 @@ export class RecordService {
       throw new NotFoundException('Record not found');
     }
 
-    const { mbid: originalMbid } = updateRecordDto;
+    const { mbid: newMbid } = updateRecordDto;
 
     const { mbid, trackList } = await (async () => {
-      if (record.mbid) {
+      if (!newMbid || newMbid === record.mbid) {
         return { mbid: record.mbid, trackList: record.trackList };
       }
 
-      if (!originalMbid) {
-        return { mbid: undefined, trackList: undefined };
-      }
-
-      const releaseData = await this.retrieveReleaseData(originalMbid);
+      const releaseData = await this.retrieveReleaseData(newMbid);
       return {
         mbid: releaseData?.mbid,
         trackList: releaseData?.tracks.map((track) => ({
