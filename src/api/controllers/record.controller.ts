@@ -1,42 +1,21 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  Put,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { Controller, Get, Post, Body, Param, Query, Put } from '@nestjs/common';
 import { Record } from '../schemas/record.schema';
-import { Model } from 'mongoose';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateRecordRequestDTO } from '../dtos/create-record.request.dto';
 import { RecordCategory, RecordFormat } from '../schemas/record.enum';
 import { UpdateRecordRequestDTO } from '../dtos/update-record.request.dto';
+import { RecordService } from '../services/record.service';
 
 @Controller('records')
 export class RecordController {
-  constructor(
-    @InjectModel('Record') private readonly recordModel: Model<Record>,
-  ) {}
+  constructor(private recordService: RecordService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new record' })
   @ApiResponse({ status: 201, description: 'Record successfully created' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   async create(@Body() request: CreateRecordRequestDTO): Promise<Record> {
-    return await this.recordModel.create({
-      artist: request.artist,
-      album: request.album,
-      price: request.price,
-      qty: request.qty,
-      format: request.format,
-      category: request.category,
-      mbid: request.mbid,
-    });
+    return this.recordService.create(request);
   }
 
   @Put(':id')
@@ -48,19 +27,7 @@ export class RecordController {
     @Param('id') id: string,
     @Body() updateRecordDto: UpdateRecordRequestDTO,
   ): Promise<Record> {
-    const record = await this.recordModel.findById(id);
-    if (!record) {
-      throw new NotFoundException('Record not found');
-    }
-
-    Object.assign(record, updateRecordDto);
-
-    const updated = await this.recordModel.updateOne(record);
-    if (!updated) {
-      throw new InternalServerErrorException('Failed to update record');
-    }
-
-    return record;
+    return this.recordService.update(id, updateRecordDto);
   }
 
   @Get()
@@ -126,25 +93,14 @@ export class RecordController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ): Promise<Record[]> {
-    let query = this.recordModel.find();
-
-    if (q) {
-      query = query.or([
-        { artist: { $regex: q, $options: 'i' } },
-        { album: { $regex: q, $options: 'i' } },
-        { category: { $regex: q, $options: 'i' } },
-      ]);
-    } else {
-      query = query.find({
-        ...(artist ? { artist: { $regex: artist, $options: 'i' } } : {}),
-        ...(album ? { album: { $regex: album, $options: 'i' } } : {}),
-        ...(format ? { format: { $regex: format, $options: 'i' } } : {}),
-        ...(category ? { category: { $regex: category, $options: 'i' } } : {}),
-      });
-    }
-
-    query = query.limit(limit).skip((page - 1) * limit);
-
-    return query.exec();
+    return this.recordService.search({
+      q,
+      artist,
+      album,
+      format,
+      category,
+      page,
+      limit,
+    });
   }
 }
