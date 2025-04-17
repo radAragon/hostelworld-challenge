@@ -69,7 +69,7 @@ export class CreateRecordRequestDTO {
   category: RecordCategory;
 
   @ApiProperty({
-    description: 'Musicbrainz identifier',
+    description: 'Musicbrainz (artist) identifier',
     type: String,
     example: 'b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d',
   })
