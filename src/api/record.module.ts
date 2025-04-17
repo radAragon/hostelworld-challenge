@@ -4,11 +4,13 @@ import { RecordController } from './controllers/record.controller';
 import { RecordService } from './services/record.service';
 import { RecordSchema } from './schemas/record.schema';
 import { MbrainzService } from '../mbrainz/mbrainz.service';
+
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Record', schema: RecordSchema }]),
   ],
   controllers: [RecordController],
   providers: [RecordService, MbrainzService],
+  exports: [],
 })
 export class RecordModule {}

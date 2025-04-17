@@ -9,7 +9,7 @@ import { RecordService } from '../services/record.service';
 import { MbrainzService } from '../../mbrainz/mbrainz.service';
 
 describe('RecordController', () => {
-  let recordController: RecordController;
+  let controller: RecordController;
   let recordModel: Model<Record>;
   let mbrainzService: MbrainzService;
 
@@ -33,7 +33,7 @@ describe('RecordController', () => {
       ],
     }).compile();
 
-    recordController = module.get<RecordController>(RecordController);
+    controller = module.get<RecordController>(RecordController);
     recordModel = module.get<Model<Record>>(getModelToken('Record'));
     mbrainzService = module.get<MbrainzService>(MbrainzService);
   });
@@ -61,7 +61,7 @@ describe('RecordController', () => {
 
     jest.spyOn(recordModel, 'create').mockResolvedValue(savedRecord as any);
 
-    const result = await recordController.create(createRecordDto);
+    const result = await controller.create(createRecordDto);
     expect(result).toEqual(savedRecord);
     expect(recordModel.create).toHaveBeenCalledWith({
       artist: 'Test',
@@ -134,7 +134,7 @@ describe('RecordController', () => {
     } as any);
     jest.spyOn(recordModel, 'create').mockResolvedValue(savedRecord as any);
 
-    const result = await recordController.create(createRecordDto);
+    const result = await controller.create(createRecordDto);
     expect(result).toEqual(savedRecord);
     expect(recordModel.create).toHaveBeenCalledWith({
       artist: 'The Beatles',
@@ -179,7 +179,7 @@ describe('RecordController', () => {
       ...changes,
     } as any);
 
-    const result = await recordController.update(
+    const result = await controller.update(
       savedRecord._id as string,
       changes as any,
     );
@@ -208,7 +208,7 @@ describe('RecordController', () => {
       exec: jest.fn().mockResolvedValue(records),
     } as any);
 
-    const result = await recordController.findAll();
+    const result = await controller.findAll();
     expect(result).toEqual(records);
     expect(recordModel.find).toHaveBeenCalled();
   });
@@ -227,7 +227,7 @@ describe('RecordController', () => {
       exec: jest.fn().mockResolvedValue(records),
     } as any);
 
-    const result = await recordController.findAll('Artist');
+    const result = await controller.findAll('Artist');
     expect(result).toEqual(records);
     expect(recordModel.find).toHaveBeenCalled();
   });
